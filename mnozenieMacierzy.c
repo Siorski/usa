@@ -15,6 +15,10 @@
 #define MLD 1000000000.0 //10^9
 
 int main(int argc, char *argv[]){
+  struct timespec czas_wczyt_start, czas_wczyt_stop, czas_mnoz_start, 
+  czas_mnoz_stop, czas_zapis_start, czas_zapis_stop, czas_ogol_start, czas_ogol_stop;
+  double czas1, czas2, czas3, czas4;
+  clock_gettime(CLOCK_MONOTONIC, &czas_ogol_start);
   if(argc!=4){
     printf("******** BŁĄD! ******** \n");
     printf("Uruchamianie: ./nazwaprogramu nazwa_pliku_z_macierza_A nazwa_pliku_z_macierza_B nazwa_pliku_wynikowego \n");
@@ -22,11 +26,13 @@ int main(int argc, char *argv[]){
   }
   FILE *plik; 
   int i,j,k,ilosc_wierszy_A,ilosc_kolumn_A,ilosc_wierszy_B,ilosc_kolumn_B; 
-  struct timespec tp0, tp1;
-  double sp;
+  double timeDiff(struct timespec *timeA_p, struct timespec *timeB_p){
+    double diff = (((timeA_p->tv_sec * MLD) + timeA_p->tv_nsec) - ((timeB_p->tv_sec * MLD) + timeB_p->tv_nsec));
+    return diff / MLD;
+  }
 
-  clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&tp0); //pobieramy czas z procesora przed wczytywaniem danych
   /*WCZYTYWANIE MACIERZY A */
+  clock_gettime(CLOCK_MONOTONIC, &czas_wczyt_start);
   plik=fopen(argv[1],"r"); 
   if(plik==NULL){ 
     printf("Błąd podczas otwierania pliku!\n"); 
@@ -68,9 +74,10 @@ int main(int argc, char *argv[]){
   }  
   fclose(plik);
 
-  clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&tp1); //pobieramy czas z procesora po wczytywaniu danych
-  sp = (tp1.tv_sec+tp1.tv_nsec/MLD)-(tp0.tv_sec+tp0.tv_nsec/MLD);
-  printf("Czas wczytywania danych: %3.10lf\n",sp);          
+  clock_gettime(CLOCK_MONOTONIC, &czas_wczyt_stop);
+  czas1 = timeDiff(&czas_wczyt_stop, &czas_wczyt_start);
+  printf("Mnożę macierzę z plików %s oraz %s \n", argv[1], argv[2]);
+  printf("Czas wczytywania danych: %lf\n",czas1);          
 
   /*SPRAWDZANIE CZY MNOŻENIE JEST WYKONALNE */
   if(ilosc_kolumn_A != ilosc_wierszy_B){
@@ -91,9 +98,8 @@ int main(int argc, char *argv[]){
     } 
   } 
 
-  clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&tp0); //pobieramy czas z procesora przed głównymi obliczenami
   /*MNOŻENIE MACIERZY */
-  printf("Mnożę macierzę z plików %s oraz %s \n", argv[1], argv[2]);
+  clock_gettime(CLOCK_MONOTONIC, &czas_mnoz_start);
   for(i=0; i<ilosc_wierszy_A; i++){
     for(j=0; j<ilosc_kolumn_B; j++){
       for(k=0; k<ilosc_wierszy_B; k++){
@@ -101,14 +107,13 @@ int main(int argc, char *argv[]){
       }
     }
   }
-  clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&tp1); //pobieramy czas z procesora po głównych obliczeniach
-  sp = (tp1.tv_sec+tp1.tv_nsec/MLD)-(tp0.tv_sec+tp0.tv_nsec/MLD);
-  printf("Czas obliczeń: %3.10lf\n",sp);
+  clock_gettime(CLOCK_MONOTONIC, &czas_mnoz_stop);
+  czas2 = timeDiff(&czas_mnoz_stop, &czas_mnoz_start);
+  printf("Czas obliczeń: %lf\n", czas2);
 
-  clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&tp0); //pobieramy czas z procesora przed wypisywaniem wyniku
   /*WYPISYWANIE MACIERZY WYNIKOWEJ*/
+  clock_gettime(CLOCK_MONOTONIC, &czas_zapis_start);
   plik=fopen(argv[3],"w");
-  // printf("******** MACIERZ WYNIKOWA ********\n");
   for(i=0; i<ilosc_wierszy_A; i++){ 
     for(j=0; j<ilosc_kolumn_B; j++){ 
       fprintf(plik, "%d ",macierzC[i][j]); 
@@ -117,8 +122,13 @@ int main(int argc, char *argv[]){
   } 
   fclose(plik);  
 
-  clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&tp1); //pobieramy czas z procesora po głównych obliczeniach
-  sp = (tp1.tv_sec+tp1.tv_nsec/MLD)-(tp0.tv_sec+tp0.tv_nsec/MLD);
-  printf("Czas zapisu danych: %3.10lf\n",sp);
+  clock_gettime(CLOCK_MONOTONIC, &czas_zapis_stop);
+  czas3 = timeDiff(&czas_zapis_stop, &czas_zapis_start);
+  printf("Czas zapisu danych: %lf\n", czas3);
+
+  clock_gettime(CLOCK_MONOTONIC, &czas_ogol_stop);
+  czas4 = timeDiff(&czas_ogol_stop, &czas_ogol_start);
+  printf("Czas wykonania całego programu: %lf\n", czas4);
+  printf("***************************************************\n");
   return 0;
 };
