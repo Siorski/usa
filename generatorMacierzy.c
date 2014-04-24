@@ -15,7 +15,10 @@ int main(int argc, char *argv[]) {
 	int i,j;
 	int ilosc_wierszy = atoi(argv[1]);
 	int ilosc_kolumn = atoi(argv[2]);
-	int macierz[ilosc_wierszy][ilosc_kolumn];
+	int **macierz = (int **)malloc(ilosc_wierszy * sizeof(int*));
+  for (i = 0; i < ilosc_wierszy; i++) {
+    macierz[i] = (int *)malloc(ilosc_kolumn * sizeof(int));
+  }
 	plik = fopen(argv[3],"w");
 	fprintf(plik, "%d %d\n",ilosc_wierszy,ilosc_kolumn);
 	for(i=0; i<ilosc_wierszy; i++){

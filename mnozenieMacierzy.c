@@ -1,6 +1,6 @@
 /* Program mnożący macierze.
    kompilacja z opcja -lrt
-   Uruchamianie: ./nazwaprogramu nazwa_pliku_z_macierza_A nazwa_pliku_z_macierza_B 
+   Uruchamianie: ./nazwaprogramu nazwa_pliku_z_macierza_A nazwa_pliku_z_macierza_B nazwa_pliku_wynikowego 
    Plik z macierza w postaci:
    x y
    a b c
@@ -15,9 +15,9 @@
 #define MLD 1000000000.0 //10^9
 
 int main(int argc, char *argv[]){
-  if(argc!=3){
+  if(argc!=4){
     printf("******** BŁĄD! ******** \n");
-    printf("Uruchamianie: ./nazwaprogramu nazwa_pliku_z_macierza_A nazwa_pliku_z_macierza_B\n");
+    printf("Uruchamianie: ./nazwaprogramu nazwa_pliku_z_macierza_A nazwa_pliku_z_macierza_B nazwa_pliku_wynikowego \n");
     exit(0);
   }
   FILE *plik; 
@@ -33,12 +33,19 @@ int main(int argc, char *argv[]){
     exit(0);
   } 
   fscanf(plik,"%d %d\n",&ilosc_wierszy_A,&ilosc_kolumn_A); 
-  int macierzA[ilosc_wierszy_A][ilosc_kolumn_A];
+
+  /*DYNAMICZNE TWORZENIE MACIERZY A */
+  int **macierzA = (int **)malloc(ilosc_wierszy_A * sizeof(int*));
+  for (i = 0; i < ilosc_wierszy_A; i++) {
+    macierzA[i] = (int *)malloc(ilosc_kolumn_A * sizeof(int));
+  }
+  
   for(i=0; i<ilosc_wierszy_A; i++){
     for(j=0; j<ilosc_kolumn_A; j++){
       fscanf(plik,"%d ",&macierzA[i][j]);
     } 
   }
+  fclose(plik);  
 
   /*WCZYTYWANIE MACIERZY B */
   plik=fopen(argv[2],"r"); 
@@ -47,13 +54,19 @@ int main(int argc, char *argv[]){
     exit(0);
   } 
   fscanf(plik,"%d %d\n",&ilosc_wierszy_B,&ilosc_kolumn_B); 
-  int macierzB[ilosc_wierszy_B][ilosc_kolumn_B];
+
+  /*DYNAMICZNE TWORZENIE MACIERZY B */
+  int **macierzB = (int **)malloc(ilosc_wierszy_B * sizeof(int*));
+  for (i = 0; i < ilosc_wierszy_B; i++) {
+    macierzB[i] = (int *)malloc(ilosc_kolumn_B * sizeof(int));
+  }
+
   for(i=0; i<ilosc_wierszy_B; i++){
     for(j=0; j<ilosc_kolumn_B; j++){
       fscanf(plik,"%d ",&macierzB[i][j]);
     } 
   }  
-  fclose(plik);  
+  fclose(plik);
 
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&tp1); //pobieramy czas z procesora po wczytywaniu danych
   sp = (tp1.tv_sec+tp1.tv_nsec/MLD)-(tp0.tv_sec+tp0.tv_nsec/MLD);
@@ -65,27 +78,14 @@ int main(int argc, char *argv[]){
     exit(0);
   }
 
-  /*DRUKOWANIE MACIERZY A */
-  printf("******** MACIERZ A ********\n");
-  for(i=0; i<ilosc_wierszy_A; i++){ 
-    for(j=0; j<ilosc_kolumn_A; j++){ 
-      printf("%d ",macierzA[i][j]); 
-    } 
-  printf("\n"); 
-  } 
-
-  /*DRUKOWANIE MACIERZY B */
-  printf("******** MACIERZ B ********\n");
-  for(i=0; i<ilosc_wierszy_B; i++){ 
-    for(j=0; j<ilosc_kolumn_B; j++){ 
-      printf("%d ",macierzB[i][j]); 
-    } 
-    printf("\n"); 
-  } 
+  /*DYNAMICZNE TWORZENIE MACIERZY WYNIKOWEJ */
+  int **macierzC = (int **)malloc(ilosc_wierszy_A * sizeof(int*));
+  for (i = 0; i < ilosc_wierszy_A; i++) {
+    macierzC[i] = (int *)malloc(ilosc_kolumn_B * sizeof(int));
+  }
 
   /*ZEROWANIE MACIERZY WYNIKOWEJ */
-  int macierzC[ilosc_wierszy_A][ilosc_kolumn_B];
-   for(i=0; i<ilosc_wierszy_A; i++){ 
+  for(i=0; i<ilosc_wierszy_A; i++){ 
     for(j=0; j<ilosc_kolumn_B; j++){ 
       macierzC[i][j] = 0; 
     } 
@@ -93,6 +93,7 @@ int main(int argc, char *argv[]){
 
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&tp0); //pobieramy czas z procesora przed głównymi obliczenami
   /*MNOŻENIE MACIERZY */
+  printf("Mnożę macierzę z plików %s oraz %s \n", argv[1], argv[2]);
   for(i=0; i<ilosc_wierszy_A; i++){
     for(j=0; j<ilosc_kolumn_B; j++){
       for(k=0; k<ilosc_wierszy_B; k++){
@@ -106,20 +107,18 @@ int main(int argc, char *argv[]){
 
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&tp0); //pobieramy czas z procesora przed wypisywaniem wyniku
   /*WYPISYWANIE MACIERZY WYNIKOWEJ*/
-  printf("******** MACIERZ WYNIKOWA ********\n");
+  plik=fopen(argv[3],"w");
+  // printf("******** MACIERZ WYNIKOWA ********\n");
   for(i=0; i<ilosc_wierszy_A; i++){ 
     for(j=0; j<ilosc_kolumn_B; j++){ 
-      printf("%d ",macierzC[i][j]); 
+      fprintf(plik, "%d ",macierzC[i][j]); 
     } 
-    printf("\n"); 
+    fprintf(plik,"\n"); 
   } 
+  fclose(plik);  
+
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID,&tp1); //pobieramy czas z procesora po głównych obliczeniach
   sp = (tp1.tv_sec+tp1.tv_nsec/MLD)-(tp0.tv_sec+tp0.tv_nsec/MLD);
   printf("Czas zapisu danych: %3.10lf\n",sp);
   return 0;
 };
-
-//TODO
-// malloc dla tablic
-// macierz wynikowa dla pliku
-// repo 
