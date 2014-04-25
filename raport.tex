@@ -37,8 +37,9 @@ Stworzone rozwiązania oraz zastosowane w nich kluczowe funkcje:
 \end{itemize}
 
 \subsection{Mierzenie czasu}
-W wersji równoległej do mierzenia czasu została użyta biblioteka \textit{time.h} oraz zawarta w niej funkcja \textit{clock\_gettime(CLOCK\_MONOTONIC)}. Natomiast w wersjach równoległych wykorzystana została biblioteka \textit{omp.h} i zawarta w niej funkcja \textit{omp\_get\_wtime}.
+Do mierzenia czasu została użyta biblioteka \textit{time.h} oraz zawarta w niej funkcja \textit{clock\_gettime(CLOCK\_MONOTONIC)}.
 
+\newpage
 \subsection{Wersje równoległe}
 Stworzenie równoległej wersji rozwiązania sprowadziło się do zrównoleglenia głównej części, w której macierze są mnożone: 
 \begin{lstlisting}[language=C,frame=lines,keywordstyle=\color{red}\bfseries

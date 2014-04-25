@@ -1,5 +1,5 @@
 /* Program mnożący macierze przy użyciu OpenMP dla XEON PHI.
-   Kompilacja: icc -mmic  phiMnozenieMacierzy.c -fopenmp -o phiMnozenieMacierzy
+   Kompilacja: icc -mmic  phiMnozenieMacierzy.c -fopenmp -lrt -o phiMnozenieMacierzy
    Uruchamianie: ./nazwaprogramu nazwa_pliku_z_macierza_A nazwa_pliku_z_macierza_B nazwa_pliku_wynikowego 
    Plik z macierza w postaci:
    x y
@@ -16,11 +16,16 @@
 #define MLD 1000000000.0 //10^9
 
 int main(int argc, char *argv[]){
-  double czas_wczyt_start, czas_wczyt_stop, czas_mnoz_start, 
+  struct timespec czas_wczyt_start, czas_wczyt_stop, czas_mnoz_start, 
   czas_mnoz_stop, czas_zapis_start, czas_zapis_stop, 
-  czas_ogol_start, czas_ogol_stop, czas1, czas2, czas3, czas4;
-  
-  czas_ogol_start = omp_get_wtime();
+  czas_ogol_start, czas_ogol_stop;
+  double czas1, czas2, czas3, czas4;
+  double timeDiff(struct timespec *timeA_p, struct timespec *timeB_p){
+    double diff = (((timeA_p->tv_sec * MLD) + timeA_p->tv_nsec) - ((timeB_p->tv_sec * MLD) + timeB_p->tv_nsec));
+    return diff / MLD;
+  }
+
+  clock_gettime(CLOCK_MONOTONIC, &czas_ogol_start);
   if(argc!=4){
     printf("******** BŁĄD! ******** \n");
     printf("Uruchamianie: ./nazwaprogramu nazwa_pliku_z_macierza_A nazwa_pliku_z_macierza_B nazwa_pliku_wynikowego \n");
@@ -30,7 +35,6 @@ int main(int argc, char *argv[]){
   int i,j,k,ilosc_wierszy_A,ilosc_kolumn_A,ilosc_wierszy_B,ilosc_kolumn_B; 
 
   /*WCZYTYWANIE MACIERZY A */
-  czas_wczyt_start = omp_get_wtime();
   plik=fopen(argv[1],"r"); 
   if(plik==NULL){ 
     printf("Błąd podczas otwierania pliku!\n"); 
@@ -43,11 +47,14 @@ int main(int argc, char *argv[]){
   for (i = 0; i < ilosc_wierszy_A; i++) {
     macierzA[i] = (int *)malloc(ilosc_kolumn_A * sizeof(int));
   }
-  
+  int id;
+  id = omp_get_thread_num();
+  if(id==0){
   for(i=0; i<ilosc_wierszy_A; i++){
     for(j=0; j<ilosc_kolumn_A; j++){
       fscanf(plik,"%d ",&macierzA[i][j]);
     } 
+  }
   }
   fclose(plik);  
 
@@ -72,8 +79,8 @@ int main(int argc, char *argv[]){
   }  
   fclose(plik);
 
-  czas_wczyt_stop = omp_get_wtime();
-  czas1 = czas_wczyt_stop - czas_wczyt_start;
+  clock_gettime(CLOCK_MONOTONIC, &czas_ogol_stop);
+  czas1 = timeDiff(&czas_ogol_stop, &czas_ogol_start);
   printf("Mnożę macierze z plików %s oraz %s \n", argv[1], argv[2]);
   printf("Czas wczytywania danych: %lf\n",czas1);          
 
@@ -98,7 +105,7 @@ int main(int argc, char *argv[]){
   } 
 
   /*MNOŻENIE MACIERZY */
-  czas_mnoz_start = omp_get_wtime();
+  clock_gettime(CLOCK_MONOTONIC, &czas_mnoz_start);
   #pragma omp parallel shared(macierzA, macierzB, macierzC) private(i,j,k)
   {
     #pragma omp for schedule (static)
@@ -110,12 +117,13 @@ int main(int argc, char *argv[]){
       }
     }
   }
-  czas_mnoz_stop = omp_get_wtime();
-  czas2 = czas_mnoz_stop - czas_mnoz_start;
+  clock_gettime(CLOCK_MONOTONIC, &czas_mnoz_stop);
+  czas2 = timeDiff(&czas_mnoz_stop, &czas_mnoz_start);
+
   printf("Czas obliczeń: %lf\n", czas2);
 
   /*WYPISYWANIE MACIERZY WYNIKOWEJ*/
-  czas_zapis_start = omp_get_wtime();
+  clock_gettime(CLOCK_MONOTONIC, &czas_zapis_start);
   plik=fopen(argv[3],"w");
   for(i=0; i<ilosc_wierszy_A; i++){ 
     for(j=0; j<ilosc_kolumn_B; j++){ 
@@ -125,12 +133,12 @@ int main(int argc, char *argv[]){
   } 
   fclose(plik);  
 
-  czas_zapis_stop = omp_get_wtime();
-  czas3 = czas_zapis_stop - czas_zapis_start;
+  clock_gettime(CLOCK_MONOTONIC, &czas_zapis_stop);
+  czas3 = timeDiff(&czas_zapis_stop, &czas_zapis_start);
   printf("Czas zapisu danych: %lf\n", czas3);
 
-  czas_ogol_stop = omp_get_wtime();
-  czas4 = czas_ogol_stop - czas_ogol_start;
+  clock_gettime(CLOCK_MONOTONIC, &czas_ogol_stop);
+  czas4 = timeDiff(&czas_ogol_stop, &czas_ogol_start);
   printf("Czas wykonania całego programu: %lf\n", czas4);
   printf("***************************************************\n");
   
