@@ -35,6 +35,7 @@ int main(int argc, char *argv[]){
   int i,j,k,ilosc_wierszy_A,ilosc_kolumn_A,ilosc_wierszy_B,ilosc_kolumn_B; 
 
   /*WCZYTYWANIE MACIERZY A */
+  clock_gettime(CLOCK_MONOTONIC, &czas_wczyt_start);
   plik=fopen(argv[1],"r"); 
   if(plik==NULL){ 
     printf("Błąd podczas otwierania pliku!\n"); 
@@ -47,14 +48,10 @@ int main(int argc, char *argv[]){
   for (i = 0; i < ilosc_wierszy_A; i++) {
     macierzA[i] = (int *)malloc(ilosc_kolumn_A * sizeof(int));
   }
-  int id;
-  id = omp_get_thread_num();
-  if(id==0){
   for(i=0; i<ilosc_wierszy_A; i++){
     for(j=0; j<ilosc_kolumn_A; j++){
       fscanf(plik,"%d ",&macierzA[i][j]);
     } 
-  }
   }
   fclose(plik);  
 
@@ -79,8 +76,8 @@ int main(int argc, char *argv[]){
   }  
   fclose(plik);
 
-  clock_gettime(CLOCK_MONOTONIC, &czas_ogol_stop);
-  czas1 = timeDiff(&czas_ogol_stop, &czas_ogol_start);
+  clock_gettime(CLOCK_MONOTONIC, &czas_wczyt_stop);
+  czas1 = timeDiff(&czas_wczyt_stop, &czas_wczyt_start);
   printf("Mnożę macierze z plików %s oraz %s \n", argv[1], argv[2]);
   printf("Czas wczytywania danych: %lf\n",czas1);          
 
