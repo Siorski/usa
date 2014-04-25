@@ -1,5 +1,5 @@
-/* Program mnożący macierze.
-   kompilacja z opcja -lrt
+/* Program mnożący macierze przy użyciu OpenMP.
+   kompilacja z opcja -fopenmp
    Uruchamianie: ./nazwaprogramu nazwa_pliku_z_macierza_A nazwa_pliku_z_macierza_B nazwa_pliku_wynikowego 
    Plik z macierza w postaci:
    x y
@@ -116,7 +116,7 @@ int main(int argc, char *argv[]){
 
   /*WYPISYWANIE MACIERZY WYNIKOWEJ*/
   czas_zapis_start = omp_get_wtime();
-  plik=fopen(argv[3],"w");
+  plik=fopen(argv[3],"a");
   for(i=0; i<ilosc_wierszy_A; i++){ 
     for(j=0; j<ilosc_kolumn_B; j++){ 
       fprintf(plik, "%d ",macierzC[i][j]); 
@@ -133,5 +133,14 @@ int main(int argc, char *argv[]){
   czas4 = czas_ogol_stop - czas_ogol_start;
   printf("Czas wykonania całego programu: %lf\n", czas4);
   printf("***************************************************\n");
+  
+  plik=fopen(argv[3],"a");
+  fprintf(plik, "\n CZASY DLA OpenMP NA SIGMIE: \n");
+  fprintf(plik, "Czas wczytywania danych: %lf\n", czas1);
+  fprintf(plik, "Czas obliczeń: %lf\n", czas2);
+  fprintf(plik, "Czas zapisu danych: %lf\n", czas3);
+  fprintf(plik, "Czas wykonania całego programu: %lf\n", czas4);
+  fprintf(plik, "************************************************\n");
+  fclose(plik);
   return 0;
 };

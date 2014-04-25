@@ -113,7 +113,7 @@ int main(int argc, char *argv[]){
 
   /*WYPISYWANIE MACIERZY WYNIKOWEJ*/
   clock_gettime(CLOCK_MONOTONIC, &czas_zapis_start);
-  plik=fopen(argv[3],"w");
+  plik=fopen(argv[3],"a");
   for(i=0; i<ilosc_wierszy_A; i++){ 
     for(j=0; j<ilosc_kolumn_B; j++){ 
       fprintf(plik, "%d ",macierzC[i][j]); 
@@ -130,5 +130,13 @@ int main(int argc, char *argv[]){
   czas4 = timeDiff(&czas_ogol_stop, &czas_ogol_start);
   printf("Czas wykonania całego programu: %lf\n", czas4);
   printf("***************************************************\n");
+
+  plik=fopen(argv[3],"a");
+  fprintf(plik, "\n CZASY DLA ROZWIĄZANIA SEKWENCYJNEGO: \n");
+  fprintf(plik, "Czas wczytywania danych: %lf\n", czas1);
+  fprintf(plik, "Czas obliczeń: %lf\n", czas2);
+  fprintf(plik, "Czas zapisu danych: %lf\n", czas3);
+  fprintf(plik, "Czas wykonania całego programu: %lf\n", czas4);
+  fprintf(plik, "************************************************\n");
   return 0;
 };
