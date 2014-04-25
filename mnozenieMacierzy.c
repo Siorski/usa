@@ -76,7 +76,7 @@ int main(int argc, char *argv[]){
 
   clock_gettime(CLOCK_MONOTONIC, &czas_wczyt_stop);
   czas1 = timeDiff(&czas_wczyt_stop, &czas_wczyt_start);
-  printf("Mnożę macierzę z plików %s oraz %s \n", argv[1], argv[2]);
+  printf("Mnożę macierze z plików %s oraz %s \n", argv[1], argv[2]);
   printf("Czas wczytywania danych: %lf\n",czas1);          
 
   /*SPRAWDZANIE CZY MNOŻENIE JEST WYKONALNE */

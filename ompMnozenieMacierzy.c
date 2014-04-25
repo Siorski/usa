@@ -74,7 +74,7 @@ int main(int argc, char *argv[]){
 
   czas_wczyt_stop = omp_get_wtime();
   czas1 = czas_wczyt_stop - czas_wczyt_start;
-  printf("Mnożę macierzę z plików %s oraz %s \n", argv[1], argv[2]);
+  printf("Mnożę macierze z plików %s oraz %s \n", argv[1], argv[2]);
   printf("Czas wczytywania danych: %lf\n",czas1);          
 
 
